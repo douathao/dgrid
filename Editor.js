@@ -405,10 +405,10 @@ define([
 				// construct options from the store
 				if (editor === 'select' && args.hasOwnProperty('store')) {
 					args.store.query()
-						.map(function (store) {
+						.map(function (item) {
 							return {
-								value: store.id,
-								innerHTML: store.name
+								value: args.store.getIdentity(item),
+								innerHTML: item.name
 							}
 						})
 						.forEach(function (option) {
