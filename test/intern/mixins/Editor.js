@@ -14,13 +14,29 @@ define([
 	'dgrid/OnDemandGrid',
 	'dgrid/Editor',
 	'dgrid/test/data/createSyncStore',
-	'dgrid/test/data/orderedData'
+	'dgrid/test/data/orderedData',
+	'dojo/store/Memory'
 ], function (test, assert, declare, aspect, Deferred, on, all, query, when, registry, TextBox,
-		Grid, OnDemandGrid, Editor, createSyncStore, orderedData) {
+		Grid, OnDemandGrid, Editor, createSyncStore, orderedData, LegacyMemory) {
 
 	var testOrderedData = orderedData.items,
 		EditorGrid = declare([Grid, Editor]),
-		grid;
+		grid,
+		optionsData = [
+			{ id: "1", name: "one" },
+			{ id: "2", name: "two" },
+			{ id: "3", name: "three" },
+			{ id: "4", name: "four" },
+			{ id: "5", name: "five" }
+		],
+		optionsStore = new LegacyMemory({ data: optionsData }),
+		selectTestData = [
+			{"editor": "1", id: 1},
+			{"editor": "2", id: 2},
+			{"editor": "3", id: 3},
+			{"editor": "4", id: 4},
+			{"editor": "5", id: 5}
+		];
 
 	test.suite('Editor mixin', function () {
 
@@ -460,6 +476,54 @@ define([
 			testRow(0);
 
 			return dfd;
+		});
+
+		test.test('Select - editOn - true', function () {
+			var option,
+				select;
+			grid = new EditorGrid({
+				columns: {
+					editor: {
+						editor: "select",
+						editorArgs: { store: optionsStore}
+					}
+				}
+			});
+
+			document.body.appendChild(grid.domNode);
+			grid.startup();
+			grid.renderArray(selectTestData);
+			select = query('select');
+			option = query('option');
+			assert.strictEqual(select.length, 5, "should have select type");
+			assert.strictEqual(option.length, 25, "should have option");
+			grid.destroy();
+
+		});
+
+		test.test('Select - editOn - false', function () {
+			var option,
+				select;
+			grid = new EditorGrid({
+				columns: {
+					editor: {
+						editor: "select",
+						editOn: "click",
+						editorArgs: { store: optionsStore}
+					}
+				}
+			});
+
+			document.body.appendChild(grid.domNode);
+			grid.startup();
+			grid.renderArray(selectTestData);
+			grid.edit(grid.cell(0, "editor"));
+			select = query('select');
+			option = query('option');
+			assert.strictEqual(select.length, 1, "should have select type");
+			assert.strictEqual(option.length, 5, "should have option");
+			grid.destroy();
+
 		});
 	});
 });

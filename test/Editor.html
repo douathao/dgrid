@@ -79,7 +79,11 @@
 								generate: generateText,
 								column: { editorArgs: { rows: 3 } }
 							},
-							// TODO: support select?
+							{
+								label: "select",
+								generate: generateOptionValue,
+								column: { editorArgs: { store: optionsStore } }
+							},
 							// Dijits
 							{ label: "dijit/form/TextBox", generate: generateText },
 							{ label: "dijit/form/SimpleTextarea", generate: generateText },
