@@ -46,7 +46,7 @@ define([
 			// updated
 			var disabledLinks = query('span.dgrid-page-disabled', grid.paginationLinksNode),
 				expectedText = string.substitute(grid.i18nPagination.status,
-					{ start: 1, end: 10, total: 100 });
+					{ start: 1, end: 10, total: genericData.items.length });
 
 			function testPaginationAssertions(expectedPage) {
 				assert.strictEqual(grid.paginationStatusNode.innerHTML, expectedText,
@@ -65,7 +65,7 @@ define([
 
 			grid.gotoPage(2);
 			disabledLinks = query('span.dgrid-page-disabled', grid.paginationLinksNode);
-			expectedText = string.substitute(grid.i18nPagination.status, {start: 11, end: 20, total: 100});
+			expectedText = string.substitute(grid.i18nPagination.status, {start: 11, end: 20, total: genericData.items.length});
 
 			testPaginationAssertions('2');
 		});
