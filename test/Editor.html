@@ -41,9 +41,9 @@
 
 			require(["dgrid/OnDemandGrid", "dgrid/Selection", "dgrid/Keyboard", "dgrid/Editor", "put-selector/put",
 				"dojo/_base/lang", "dojo/_base/declare", "dojo/on", "dojo/dom-construct",
-				"dojo/store/Memory", "dstore/Memory", "dstore/Trackable", "dojo/data/ObjectStore",
+				"dstore/Memory", "dstore/Trackable", "dojo/data/ObjectStore",
 				"dgrid/test/data/createAsyncStore", "dojo/domReady!"
-			], function(Grid, Selection, Keyboard, Editor, put, lang, declare, on, domConstruct, LegacyMemory, Memory, Trackable, ObjectStore, createAsyncStore){
+			], function(Grid, Selection, Keyboard, Editor, put, lang, declare, on, domConstruct, Memory, Trackable, ObjectStore, createAsyncStore){
 				var today = new Date(),
 						form = document.getElementById("editorForm"),
 						typesArea = document.getElementById("editorComponentTypes"),
@@ -55,11 +55,7 @@
 							{ id: "5", name: "five" }
 						],
 						optionsLength = optionsData.length,
-						optionsStore = new LegacyMemory({ data: optionsData }),
-						optionsDataStore = new ObjectStore({
-							objectStore: optionsStore,
-							labelProperty: "name"
-						}),
+						optionsStore = new Memory({data:optionsData}),
 						CustomGrid = declare([Grid, Selection, Keyboard, Editor]),
 						TestStoreMixin = declare(null, {
 							put: function(object, options){
@@ -79,7 +75,11 @@
 								generate: generateText,
 								column: { editorArgs: { rows: 3 } }
 							},
-							// TODO: support select?
+							{
+								label: "select",
+								generate: generateOptionValue,
+								column: { editorArgs: { store: optionsStore, optionValueField: 'id', optionLabelField: 'name'} }
+							},
 							// Dijits
 							{ label: "dijit/form/TextBox", generate: generateText },
 							{ label: "dijit/form/SimpleTextarea", generate: generateText },
@@ -131,7 +131,7 @@
 								label: "dijit/form/Select",
 								generate: generateOptionValue,
 								column: { editorArgs: {
-									store: optionsDataStore,
+									store: optionsStore,
 									// need to set width directly for Select to size correctly
 									style: { width: "99%" }
 								} }

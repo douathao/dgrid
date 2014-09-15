@@ -289,6 +289,28 @@ define([
 			};
 		}
 
+		function createSelectTest () {
+			return function () {
+				var command = new EditorCommand(this.get('remote')),
+					rowIndex = '0';
+				command = command.get(require.toUrl('./Editor.html'))
+					.then(pollUntil(function () {
+						return window.ready;
+					}, null, 5000));
+
+				return command.findByCssSelector(rowSelectorPrefix + rowIndex + ' td.dgrid-cell.dgrid-column-options.field-options')
+					.click().click().pressKeys('t').pressKeys(keys.ENTER)
+					.dismissViaBlur()
+					.end()
+					.findByCssSelector(rowSelectorPrefix + rowIndex + ' td.dgrid-cell.dgrid-column-options.field-options')
+					.getProperty('innerHTML')
+					.then(function (cellValue) {
+						assert.strictEqual(cellValue, "2",
+							'Should be 2');
+					});
+			};
+		}
+
 		// Function passed to above functions to change grid column structure
 		// to test other types of editors
 
@@ -346,5 +368,7 @@ define([
 
 		test.test('autoSave: true', createAutosaveTest());
 		test.test('autoSave: true - TextBox', createAutosaveTest(setTextBox));
+
+		test.test('select test value', createSelectTest());
 	});
 });

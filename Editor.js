@@ -396,12 +396,25 @@ define([
 					// also register a focus listener
 				}
 
-				putstr = editor === 'textarea' ? 'textarea' :
-					'input[type=' + editor + ']';
-				cmp = node = put(putstr + '.dgrid-input', lang.mixin({
+				putstr = (editor === 'select' || editor === 'textarea') ? editor : 'input[type=' + editor + ']';
+				cmp = put(putstr + '.dgrid-input', lang.mixin({
 					name: column.field,
 					tabIndex: isNaN(column.tabIndex) ? -1 : column.tabIndex
 				}, args));
+
+				// construct options from the store
+				if (editor === 'select' && args.store) {
+					var optionValue, optionLabel;
+					args.store
+						.filter()
+						.forEach(function (item) {
+							optionValue = item[args.optionValueField || args.store.idProperty];
+							optionLabel = item[args.optionLabelField || 'name'];
+							if (optionValue !== null && optionLabel !== null) {
+								put(cmp, 'option', {value: optionValue, innerHTML: optionLabel});
+							}
+						});
+				}
 
 				if (has('ie') < 9) {
 					// IE<9 doesn't fire change events for all the right things,

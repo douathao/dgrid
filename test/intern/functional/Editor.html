@@ -20,14 +20,24 @@
 			var grid,
 				datachangeStack = [],
 				ready = false,
-				setEditorToTextBox;
+				setEditorToTextBox,
+				optionsData = [
+					{id: "1", name: "one"},
+					{id: "2", name: "two"},
+					{id: "3", name: "three"},
+					{id: "4", name: "four"},
+					{id: "5", name: "five"}
+				],
+				optionsStore;
 
 			require([
 				'dojo/_base/declare',
 				'dgrid/Grid',
 				'dgrid/Editor',
-				'dijit/form/TextBox'
-			], function (declare, Grid, Editor, TextBox) {
+				'dijit/form/TextBox',
+				'dstore/Memory'
+			], function (declare, Grid, Editor, TextBox, Memory) {
+				optionsStore = new Memory({ data: optionsData });
 				function createColumnConfig(editorType) {
 					return {
 						id: 'ID',
@@ -39,6 +49,11 @@
 							label: 'Description',
 							editor: editorType || 'text',
 							editOn: 'click'
+						},
+						options: {
+							editor: 'select',
+							editOn: 'click',
+							editorArgs: { store: optionsStore, optionValueField: 'id', optionLabelField: 'name' }
 						}
 					};
 				}
@@ -48,9 +63,9 @@
 				}, 'grid');
 
 				grid.renderArray([
-					{ id: 0, name: '1', description: 'one' },
-					{ id: 1, name: '2', description: 'two' },
-					{ id: 2, name: '3', description: 'three' }
+					{ id: 0, name: '1', description: 'one', options: "1" },
+					{ id: 1, name: '2', description: 'two', options: "1" },
+					{ id: 2, name: '3', description: 'three', options: "1" }
 				]);
 
 				// Push values received by the "dgrid-datachange" event into a global stack.

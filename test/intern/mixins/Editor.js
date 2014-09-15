@@ -14,13 +14,53 @@ define([
 	'dgrid/OnDemandGrid',
 	'dgrid/Editor',
 	'dgrid/test/data/createSyncStore',
-	'dgrid/test/data/orderedData'
+	'dgrid/test/data/orderedData',
+	'dstore/Memory'
 ], function (test, assert, declare, aspect, Deferred, on, all, query, when, registry, TextBox,
-		Grid, OnDemandGrid, Editor, createSyncStore, orderedData) {
+		Grid, OnDemandGrid, Editor, createSyncStore, orderedData, Memory) {
 
 	var testOrderedData = orderedData.items,
 		EditorGrid = declare([Grid, Editor]),
-		grid;
+		SelectTestGrid = declare([OnDemandGrid, Editor]),
+		grid,
+		optionsData = [
+			{id: "1", name: "one"},
+			{id: "2", name: "two"},
+			{id: "3", name: "three"},
+			{id: "4", name: "four"},
+			{id: "5", name: "five"}
+		],
+		optionsStore = new Memory({data: optionsData}),
+		selectTestData = [
+			{id: 1, "value": "1"},
+			{id: 2, "value": "2"},
+			{id: 3, "value": "3"},
+			{id: 4, "value": "4"},
+			{id: 5, "value": "5"}
+		];
+
+	function testSelectValue(select) {
+		// test value of the select
+		assert.strictEqual(select[0].value, "1", "Select 1 should have value '1'");
+		assert.strictEqual(select[1].value, "2", "Select 2 should have value '2'");
+		assert.strictEqual(select[2].value, "3", "Select 3 should have value '3'");
+		assert.strictEqual(select[3].value, "4", "Select 4 should have value '4'");
+		assert.strictEqual(select[4].value, "5", "Select 5 should have value '5'");
+	}
+	function testOption(option) {
+		// test options label
+		assert.strictEqual(option[0].label, "one", "Option 1 label should be 'one'");
+		assert.strictEqual(option[1].label, "two", "Option 2 label should be 'two'");
+		assert.strictEqual(option[2].label, "three", "Option 3 label should be 'three'");
+		assert.strictEqual(option[3].label, "four", "Option 4 label should be 'four'");
+		assert.strictEqual(option[4].label, "five", "Option 5 label should be 'five'");
+		// test options value
+		assert.strictEqual(option[0].value, "1", "Option 1 value should be '1'");
+		assert.strictEqual(option[1].value, "2", "Option 2 value should be '2'");
+		assert.strictEqual(option[2].value, "3", "Option 3 value should be '3'");
+		assert.strictEqual(option[3].value, "4", "Option 4 value should be '4'");
+		assert.strictEqual(option[4].value, "5", "Option 5 value should be '5'");
+	}
 
 	test.suite('Editor mixin', function () {
 
@@ -460,6 +500,145 @@ define([
 			testRow(0);
 
 			return dfd;
+		});
+
+		test.test('select - editOn - true', function () {
+			var option,
+				select;
+			grid = new SelectTestGrid({
+				collection: new Memory({ data: selectTestData }),
+				columns: {
+					value: {
+						editor: "select",
+						editorArgs: { store: optionsStore, optionValueField: 'id', optionLabelField: 'name' }
+					}
+				}
+			});
+
+			document.body.appendChild(grid.domNode);
+			grid.startup();
+			select = query('select', grid.domNode);
+			option = query('option', grid.domNode);
+			assert.strictEqual(select.length, 5, "should have select type");
+			assert.strictEqual(option.length, 25, "should have option");
+			testSelectValue(select);
+		});
+
+		test.test('select - editOn - false', function () {
+			var option,
+				select;
+			grid = new SelectTestGrid({
+				collection: new Memory({ data: selectTestData }),
+				columns: {
+					value: {
+						editor: "select",
+						editOn: "click",
+						editorArgs: { store: optionsStore, optionValueField: 'id', optionLabelField: 'name' }
+					}
+				}
+			});
+
+			document.body.appendChild(grid.domNode);
+			grid.startup();
+			grid.edit(grid.cell(1, "value"));
+			select = query('select', grid.domNode);
+			option = query('option', grid.domNode);
+			assert.strictEqual(select.length, 1, "should have select type");
+			assert.strictEqual(option.length, 5, "should have option");
+			// test value of the select
+			assert.strictEqual(select[0].value, "1", "Select 1 should have value '1'");
+			testOption(option);
+		});
+
+		test.test('select - options - with arguments', function () {
+			var option,
+				select,
+				optionsData = [
+					{unique: "1", random: "one"},
+					{unique: "2", random: "two"},
+					{unique: "3", random: "three"},
+					{unique: "4", random: "four"},
+					{unique: "5", random: "five"}
+				],
+				optionsStore = new Memory({data: optionsData, idProperty: 'unique'}),
+				selectTestData = [
+					{id: 1, "value": "1"},
+					{id: 2, "value": "2"},
+					{id: 3, "value": "3"},
+					{id: 4, "value": "4"},
+					{id: 5, "value": "5"}
+				];
+			grid = new SelectTestGrid({
+				collection: new Memory({ data: selectTestData }),
+				columns: {
+					value: {
+						editor: "select",
+						editorArgs: { store: optionsStore, optionValueField: 'unique', optionLabelField: 'random' }
+					}
+				}
+			});
+
+			document.body.appendChild(grid.domNode);
+			grid.startup();
+			select = query('select', grid.domNode);
+			option = query('option', grid.domNode);
+			assert.strictEqual(select.length, 5, "should have select type");
+			assert.strictEqual(option.length, 25, "should have option");
+			testSelectValue(select);
+			testOption(option);
+		});
+
+		test.test('select - value should start with the initial value', function () {
+			grid = new SelectTestGrid({
+				collection: new Memory({ data: selectTestData }),
+				columns: {
+					value: {
+						editor: "select",
+						editOn: "click",
+						editorArgs: { store: optionsStore, optionValueField: 'id', optionLabelField: 'name' }
+					}
+				}
+			});
+
+			document.body.appendChild(grid.domNode);
+			grid.startup();
+			// Display the correct initial value
+			assert.strictEqual(grid.cell(1, "value").element.innerHTML, selectTestData[0].value, "Row 1 should contain the value '1'");
+			assert.strictEqual(grid.cell(2, "value").element.innerHTML, selectTestData[1].value, "Row 2 should contain the value '2'");
+			assert.strictEqual(grid.cell(3, "value").element.innerHTML, selectTestData[2].value, "Row 3 should contain the value '3'");
+			assert.strictEqual(grid.cell(4, "value").element.innerHTML, selectTestData[3].value, "Row 4 should contain the value '4'");
+			assert.strictEqual(grid.cell(5, "value").element.innerHTML, selectTestData[4].value, "Row 5 should contain the value '5'");
+		});
+
+		test.test('select - value should change when edit', function () {
+			var cell, select;
+			grid = new SelectTestGrid({
+				collection: new Memory({ data: selectTestData }),
+				columns: {
+					value: {
+						editor: "select",
+						editOn: "click",
+						editorArgs: { store: optionsStore, optionValueField: 'id', optionLabelField: 'name' }
+					}
+				}
+			});
+
+			document.body.appendChild(grid.domNode);
+			grid.startup();
+			// After editing the value should change
+			cell = grid.cell(1, "value");
+			grid.edit(cell);
+			select = query('select', cell.domNode)[0];
+			select.selectedIndex = 1; // value 2
+			// Changing the select doesn't get change when off focus so I change the collection to make sure the data get update
+			grid.collection.get(1).then(function (item) {
+				item.value = 2;
+				grid.collection.put(item).then(function () {
+					grid.save();
+					grid.refresh();
+				});
+			});
+			assert.strictEqual(grid.cell(1, "value").element.innerText, "2", "Row 1 should contain the value '2'");
 		});
 	});
 });
