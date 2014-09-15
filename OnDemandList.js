@@ -380,8 +380,6 @@ define([
 						nextRow = row[traversal];
 						reclaimedHeight += rowHeight;
 						count += row.count || 1;
-						// Just do cleanup here, as we will do a more efficient node destruction in a setTimeout below
-						grid.removeRow(row, true);
 						toDelete.push(row);
 
 						if ('rowIndex' in row) {
@@ -418,6 +416,18 @@ define([
 						// which we must do to not mess with the scroll position
 						preloadNode.style.height = (preloadNode.offsetHeight + reclaimedHeight) + 'px';
 					}
+
+					// Check to see if the rows are odd
+					if (toDelete.length % 2) {
+						// Remove the last element which is the closest row to be display
+						toDelete.pop();
+					}
+
+					// Remove rows from grid
+					for (var i = 0; i < toDelete.length; i++) {
+						grid.removeRow(toDelete[i], true);
+					}
+
 					// we remove the elements after expanding the preload node so that
 					// the contraction doesn't alter the scroll position
 					var trashBin = put('div', toDelete);

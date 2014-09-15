@@ -49,6 +49,10 @@
 			#gridAddDel, #listAddDel {
 				float: left;
 			}
+			#grid4 .dgrid-row:nth-child(odd) {
+				background: red;
+				border-color: red;
+			}
 		</style>
 		<script>
 			var start= new Date().getTime();
@@ -85,7 +89,31 @@
 					lang, declare, arrayUtil, Stateful, Memory, put, errorStores, testStore,
 					createSyncStore, createAsyncStore, typesData, largeColorData, smallColorData, stateData
 			){
-				
+				var grid4Data = (function () {
+					var data = {
+						identifier: 'id',
+						label: 'id',
+						items: []
+					};
+					/* jshint maxlen: 300 */
+					var dataList = [
+						{ col1: 'normal', col2: false, col3: 'new', col4: 'But are not followed by two hexadecimal', col5: 29.91, col6: 10, col7: false },
+						{ col1: 'important', col2: false, col3: 'new', col4: 'Because a % sign always indicates', col5: 9.33, col6: -5, col7: false },
+						{ col1: 'important', col2: false, col3: 'read', col4: 'Signs can be selectively', col5: 19.34, col6: 0, col7: true },
+						{ col1: 'note', col2: false, col3: 'read', col4: 'However the reserved characters', col5: 15.63, col6: 0, col7: true },
+						{ col1: 'normal', col2: false, col3: 'replied', col4: 'It is therefore necessary', col5: 24.22, col6: 5.50, col7: true },
+						{ col1: 'important', col2: false, col3: 'replied', col4: 'To problems of corruption by', col5: 9.12, col6: -3, col7: true },
+						{ col1: 'note', col2: false, col3: 'replied', col4: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris', col5: 12.15, col6: -4, col7: false }
+					];
+
+					var rows = 200;
+					for (var i = 0, l = dataList.length; i < rows; i++) {
+						data.items.push(lang.mixin({ id: i }, dataList[i % l]));
+					}
+					return data;
+				})();
+
+
 				function createStatefulStore() {
 					var data = [],
 						states = testStateStore.data,
@@ -156,11 +184,22 @@
 					col6: 'G',
 					col7: 'B'
 				};
+
+				var columns5 = {
+					id: 'id',
+					col2: 'Column 2',
+					col3: 'Column 3',
+					col4: 'Column 4',
+					col5: 'Column 5',
+					col6: 'Column 6',
+					col7: 'Column 7'
+				};
 				var testTypesStore = createSyncStore({ data: typesData });
 				var colorStore = createSyncStore({ data: largeColorData });
 				var smallColorStore = createSyncStore({ data: smallColorData });
 				var testStateStore = createSyncStore({ data: stateData });
 				var emptyAsyncStore = createAsyncStore();
+				var grid4DataStore = createAsyncStore({ data: grid4Data.items});
 
 				var StandardGrid = declare([Grid, Selection, Keyboard, Editor]);
 				var grid = window.grid = new StandardGrid({
@@ -181,6 +220,12 @@
 					collection: testTypesStore,
 					columns: columns3
 				}, "grid3");
+
+				var grid4 = window.grid4 = new StandardGrid({
+					collection: grid4DataStore,
+					columns: columns5,
+					sort: "id"
+				}, "grid4");
 
 				var gridAddDel = window.gridAddDel = new StandardGrid({
 					collection: smallColorStore,
@@ -338,6 +383,9 @@
 		<div id="grid2"></div>
 		<div style="float:left;margin-left:20px;"><div><h3>Dirty Items</h3></div><div id="dirty"></div></div>
 		<div id="grid3"></div>
+		<div style="clear:both"></div>
+		<h2>This grid is use to ensure that OnDemandList always removes an even number of rows</h2>
+		<div id="grid4"></div>
 		</div>
 		<div style="clear:both"><button id="save">Save Changes</button></div>
 		<p>The following buttons switch between stores in the left grid above,
