@@ -609,36 +609,5 @@ define([
 			assert.strictEqual(grid.cell(4, "value").element.innerHTML, selectTestData[3].value, "Row 4 should contain the value '4'");
 			assert.strictEqual(grid.cell(5, "value").element.innerHTML, selectTestData[4].value, "Row 5 should contain the value '5'");
 		});
-
-		test.test('select - value should change when edit', function () {
-			var cell, select;
-			grid = new SelectTestGrid({
-				collection: new Memory({ data: selectTestData }),
-				columns: {
-					value: {
-						editor: "select",
-						editOn: "click",
-						editorArgs: { store: optionsStore, optionValueField: 'id', optionLabelField: 'name' }
-					}
-				}
-			});
-
-			document.body.appendChild(grid.domNode);
-			grid.startup();
-			// After editing the value should change
-			cell = grid.cell(1, "value");
-			grid.edit(cell);
-			select = query('select', cell.domNode)[0];
-			select.selectedIndex = 1; // value 2
-			// Changing the select doesn't get change when off focus so I change the collection to make sure the data get update
-			grid.collection.get(1).then(function (item) {
-				item.value = 2;
-				grid.collection.put(item).then(function () {
-					grid.save();
-					grid.refresh();
-				});
-			});
-			assert.strictEqual(grid.cell(1, "value").element.innerText, "2", "Row 1 should contain the value '2'");
-		});
 	});
 });
