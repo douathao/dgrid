@@ -143,11 +143,13 @@ define([
 
 			handle = aspect.after(grid, '_processScroll', dfd.rejectOnError(function () {
 				handle.remove();
+				assert.isTrue(count > 0);
 				assert.strictEqual(count % 2, 0);
 				count = 0;
 
 				handle = aspect.after(grid, '_processScroll', dfd.callback(function(){
 					handle.remove();
+					assert.isTrue(count > 0);
 					assert.strictEqual(count % 2, 0);
 				}));
 
