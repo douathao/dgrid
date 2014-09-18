@@ -115,7 +115,8 @@ define([
 			var testStore = createSyncStore({data: data.items}),
 				dfd = this.async(),
 				resolve,
-				count = 0;
+				count = 0,
+				handle;
 
 			grid = new OnDemandGrid({
 				collection: testStore,
@@ -140,28 +141,20 @@ define([
 				count += 1;
 			});
 
-			aspect.after(grid, '_processScroll', function () {
-				if (count % 2) {
-					dfd.reject(count + ' rows were prune');
-				} else if (!dfd.isResolved()) {
-					assert.strictEqual(count % 2, 0);
-				}
-
+			handle = aspect.after(grid, '_processScroll', dfd.rejectOnError(function () {
+				handle.remove();
+				assert.strictEqual(count % 2, 0);
 				count = 0;
 
-				if (resolve && !dfd.isResolved()) {
-					dfd.resolve();
-				}
-			});
+				handle = aspect.after(grid, '_processScroll', dfd.callback(function(){
+					handle.remove();
+					assert.strictEqual(count % 2, 0);
+				}));
+
+				grid.scrollTo({y: 7000});
+			}));
 
 			grid.scrollTo({y: 4001});
-
-			setTimeout(function () {
-				resolve = true;
-				grid.scrollTo({y: 7000});
-			}, 200);
-
-			return dfd;
 		});
 	});
 });
